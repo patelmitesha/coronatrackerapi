@@ -1,0 +1,21 @@
+{
+  "name": "coronatrackerapi",
+  "version": "1.0.0",
+  "description": "Tracker for Corona Tracker API",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "corona"
+  ],
+  "author": "Mitesh Patel",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "formidable": "^1.2.2",
+    "moment": "^2.24.0",
+    "moment-timezone": "^0.5.28",
+    "mongodb": "^3.5.5"
+  }
+}
