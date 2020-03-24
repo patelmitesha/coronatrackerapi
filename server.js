@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const router = express.Router();
 const bodyParser = require('body-parser');
+var cors = require('cors')
 
 var MongoClient = require('mongodb').MongoClient;
 var ctrlUpload = require('./api/upload');
@@ -16,6 +17,7 @@ app.use(function applyXFrame(req,res,next){
 	res.set('X-Frame-Options','DENY');
 	next();
 });
+app.use(cors());
 
 app.get('/', (req, res) => {
   res.send('Hello from App Engine!');
