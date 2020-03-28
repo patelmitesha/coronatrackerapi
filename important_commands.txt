@@ -1,0 +1,1 @@
+db.getCollection("Locations").createIndex( { "location" : "2dsphere" } )

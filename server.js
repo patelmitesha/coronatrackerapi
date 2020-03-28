@@ -42,6 +42,8 @@ app.post('/readFile',ctrlMigration.readFile);
 
 app.post('/scanareaforinfection',ctrlLocation.scanAreaForInfection);
 
+app.post('/addInfectedLocation',ctrlLocation.addInfectedLocation);
+
 app.get('/getlocation', (req, res) => {
    // Run the query
    
