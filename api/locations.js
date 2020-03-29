@@ -50,6 +50,11 @@ module.exports.addInfectedLocation = function(req, res) {
   // sample lat : 23.0265853 , lon : 72.5200679
   console.log("Lat : "+req.body.lat+", Lon : "+req.body.lon);
   
+  let ipAddr = req.connection.remoteAddress;
+
+  if (req.headers && req.headers['x-forwarded-for']) {
+    [ipAddr] = req.headers['x-forwarded-for'].split(',');
+  }
 
   if(!req.body.lat || !req.body.lon || !req.body.name || !req.body.email){
     res.status(400).json({errors:[{code:"err003",message: "Invalid Parameters"}]});
@@ -59,6 +64,7 @@ module.exports.addInfectedLocation = function(req, res) {
     var lon = parseFloat(req.body.lon);
     var name = req.body.name;
     var email = req.body.email;
+    var locationtype = req.body.locationtype;
   
   
     var url = "mongodb+srv://mitesh:miteshpatel@cluster0-eqn0k.mongodb.net/test?retryWrites=true&w=majority";
@@ -78,23 +84,57 @@ module.exports.addInfectedLocation = function(req, res) {
             lat, 
             lon
           ]
-      }};
-      dbo.collection("Locations").insertOne(infectedLocation, function(err, result) {
+      },
+      "locationtype" : locationtype,
+      "ipaddress" : ipAddr
+    };
+
+    dbo.collection("Locations").find( 
+      { 
+        location : 
+        { 
+          $nearSphere : 
+          { 
+            $geometry: { type: "Point", coordinates: [ lat , lon ] },
+            $minDistance: 0,
+            $maxDistance: 10
+          }
+        } 
+      }).toArray(function(errDuplicate, resultDuplicate) {
         if (err) {
           console.log(err);
           res.status(500).json(err);
         }else{
-          console.log("inserted : " + infectedLocation+ ", result : "+result);
-          db.close();
-    
-          res.status(200).json(
-            {
-              success:'OK'
+
+          if(resultDuplicate.length>0){
+            db.close();
+            res.status(400).json({errors:[{code:"err003",message: "This place has already been added."}]});
+          }else{
+            dbo.collection("Locations").insertOne(infectedLocation, function(err, result) {
+              if (err) {
+                console.log(err);
+                res.status(500).json(err);
+              }else{
+                console.log("inserted : " + infectedLocation+ ", result : "+result);
+                db.close();
+          
+                res.status(200).json(
+                  {
+                    success:'OK'
+                  });
+          
+          
+              }
             });
-    
-    
+  
+
+
+          }
+
+          
         }
-      });
+
+    });
       
      
   

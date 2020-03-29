@@ -36,9 +36,9 @@ app.get('/', (req, res) => {
   res.send('Hello from App Engine!');
 });
 
-app.post('/upload', ctrlUpload.upload);
+//  app.post('/upload', ctrlUpload.upload);
 
-app.post('/readFile',ctrlMigration.readFile);
+//  app.post('/readFile',ctrlMigration.readFile);
 
 app.post('/scanareaforinfection',ctrlLocation.scanAreaForInfection);
 
