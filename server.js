@@ -8,7 +8,7 @@ var MongoClient = require('mongodb').MongoClient;
 var ctrlUpload = require('./api/upload');
 var ctrlMigration = require('./api/migratedata');
 var ctrlLocation = require('./api/locations');
-
+var ctrlLogistics = require('./api/logistics');
 
 // Parsers for POST data
 app.use(bodyParser.json());
@@ -41,6 +41,10 @@ app.get('/', (req, res) => {
 //  app.post('/readFile',ctrlMigration.readFile);
 
 app.post('/scanareaforinfection',ctrlLocation.scanAreaForInfection);
+
+app.post('/addInfectedLocation',ctrlLocation.addInfectedLocation);
+
+app.post('/addSupportRequest',ctrlLogistics.addSupportRequest);
 
 app.post('/addInfectedLocation',ctrlLocation.addInfectedLocation);
 

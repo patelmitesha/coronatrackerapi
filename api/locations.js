@@ -64,8 +64,10 @@ module.exports.addInfectedLocation = function(req, res) {
     var lon = parseFloat(req.body.lon);
     var name = req.body.name;
     var email = req.body.email;
+    var address = req.body.address;
+    var mob = req.body.mob;
     var locationtype = req.body.locationtype;
-  
+    var taggedby = req.body.taggedby;
   
     var url = "mongodb+srv://mitesh:miteshpatel@cluster0-eqn0k.mongodb.net/test?retryWrites=true&w=majority";
     const options =  { useUnifiedTopology: true, keepAlive: 1, connectTimeoutMS: 30000, useNewUrlParser: true }
@@ -74,20 +76,24 @@ module.exports.addInfectedLocation = function(req, res) {
       if (err) throw err;
       var dbo = db.db("LocationHistory");
       var infectedLocation = 
-      {"email" : email, 
-      "name" : name, 
-      "infected" : "true", 
-      "timestamp" : new Date().getTime(), 
-      "location" : {
-          "type" : "Point", 
-          "coordinates" : [
-            lat, 
-            lon
-          ]
-      },
-      "locationtype" : locationtype,
-      "ipaddress" : ipAddr
-    };
+      {
+        "email" : email, 
+        "name" : name, 
+        "address" : address,
+        "mob" : mob,
+        "infected" : "true", 
+        "location" : {
+            "type" : "Point", 
+            "coordinates" : [
+              lat, 
+              lon
+            ]
+        },
+        "locationtype" : locationtype,
+        "timestamp" : new Date().getTime(), 
+        "taggedby" : taggedby,
+        "ipaddress" : ipAddr
+      };
 
     dbo.collection("Locations").find( 
       { 
@@ -101,11 +107,10 @@ module.exports.addInfectedLocation = function(req, res) {
           }
         } 
       }).toArray(function(errDuplicate, resultDuplicate) {
-        if (err) {
-          console.log(err);
-          res.status(500).json(err);
+        if (errDuplicate) {
+          console.log(errDuplicate);
+          res.status(500).json(errDuplicate);
         }else{
-
           if(resultDuplicate.length>0){
             db.close();
             res.status(400).json({errors:[{code:"err003",message: "This place has already been added."}]});
@@ -127,11 +132,8 @@ module.exports.addInfectedLocation = function(req, res) {
               }
             });
   
-
-
           }
-
-          
+        
         }
 
     });
