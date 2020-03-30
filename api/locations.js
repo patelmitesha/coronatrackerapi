@@ -64,7 +64,6 @@ module.exports.addInfectedLocation = function(req, res) {
     var lon = parseFloat(req.body.lon);
     var name = req.body.name;
     var email = req.body.email;
-    var address = req.body.address;
     var mob = req.body.mob;
     var locationtype = req.body.locationtype;
     var taggedby = req.body.taggedby;
@@ -79,7 +78,6 @@ module.exports.addInfectedLocation = function(req, res) {
       {
         "email" : email, 
         "name" : name, 
-        "address" : address,
         "mob" : mob,
         "infected" : "true", 
         "location" : {
@@ -94,6 +92,22 @@ module.exports.addInfectedLocation = function(req, res) {
         "taggedby" : taggedby,
         "ipaddress" : ipAddr
       };
+
+
+
+      dbo.collection("Users").find( 
+        { 
+          email:taggedby,
+          role:'FieldWorker'
+        }).toArray(function(errAuthorized, resultAuthorized) {
+          if (errAuthorized) {
+            console.log(errAuthorized);
+            res.status(400).json({errors:[{code:"err003",message: "Error occured while inserting"}]});
+          }else{
+            if(resultAuthorized.length<=0){
+              console.log("Unauthorized Error");
+              res.status(400).json({errors:[{code:"err003",message: "You are not authorised to tag the location."}]});  
+            }else{
 
     dbo.collection("Locations").find( 
       { 
@@ -137,8 +151,10 @@ module.exports.addInfectedLocation = function(req, res) {
         }
 
     });
-      
-     
+  }
+  }
+  });
+
   
       });
       
