@@ -1,6 +1,43 @@
 var MongoClient = require('mongodb').MongoClient;
 var conf = require("./conf");
 
+
+/// search course by courseconfig id ///
+module.exports.getAllSupportRequests =  async function(req, res) {
+console.log("Retriving all support request for "+req.decoded.email);
+
+  var url = conf.production.database.url;
+  const options =  conf.production.database.options;
+
+  MongoClient.connect(url,options, function(err, db) {
+    if(err){
+      res.status(500).json(err);
+    }else{
+      var dbo = db.db("LocationHistory");
+      // var neighborhood = db.Locations.findOne( { location: { $geoIntersects: { $geometry: { type: "Point", coordinates: [ 23.0169186, 72.4724358 ] } } } } )
+      dbo.collection("SupportRequests").find( 
+      { 
+        
+      }).toArray(function(errSupportReq, resultSupportReq) {
+        if (errSupportReq) 
+        {
+          res.status(500).json(errSupportReq);
+        }else{
+          console.log("Returning " + resultSupportReq.length+ " Support Requests.");
+          db.close();
+          res.send(resultSupportReq);
+        }
+      
+      });
+
+    }
+
+    
+  });
+  
+  };
+  
+
 module.exports.addSupportRequest = function(req, res) {
 
     console.log('Adding Support Request');
@@ -23,9 +60,8 @@ module.exports.addSupportRequest = function(req, res) {
       var requesttype = req.body.requesttype;
       var msg = req.body.msg;
       var contactno = req.body.contactno;
-      var locationtype = new Date();
       var priority = "NORMAL";
-    
+      
       var url = conf.production.database.url;
       const options =  conf.production.database.options;
 
@@ -36,6 +72,7 @@ module.exports.addSupportRequest = function(req, res) {
         "msg":msg,
         "contactno":contactno,
         "priority":priority,
+        "requestedon" : new Date(), 
         "status" : "PENDING",
         "location" : {
             "type" : "Point", 
@@ -48,52 +85,58 @@ module.exports.addSupportRequest = function(req, res) {
       };
 
       MongoClient.connect(url,options, function(err, db) {
-        if (err) throw err;
-        var dbo = db.db("LocationHistory");
+        if (err) {
+          console.log(errSearch);
+          res.status(500).json(errSearch);
+        }else{
+
+          var dbo = db.db("LocationHistory");
   
-      dbo.collection("Locations").find( 
-        { 
-          location : 
-          { 
-            $nearSphere : 
+          dbo.collection("Locations").find( 
             { 
-              $geometry: { type: "Point", coordinates: [ lat , lon ] },
-              $minDistance: 0,
-              $maxDistance: 10
-            }
-          } , email: email
-        }).toArray(function(errSearch, resultSearch) {
-          if (errSearch) {
-            console.log(errSearch);
-            res.status(500).json(errSearch);
-          }else{
-            if(resultSearch.length<=0){
-              db.close();
-              res.status(400).json({errors:[{code:"err004",message: "You are not authorized / not in you quarantined location."}]});
-            }else{
-              dbo.collection("SupprotRequests").insertOne(supportRequest, function(err, result) {
-                if (err) {
-                  console.log(err);
-                  res.status(500).json(err);
-                }else{
-                  console.log("Inserted Reqeust for : " + requesttype+ ", from : "+email);
-                  db.close();
-            
-                  res.status(200).json(
-                    {
-                      success:'OK'
-                    });
-            
-            
+              location : 
+              { 
+                $nearSphere : 
+                { 
+                  $geometry: { type: "Point", coordinates: [ lat , lon ] },
+                  $minDistance: 0,
+                  $maxDistance: 10
                 }
-              });
-    
-            }
-          
-          }
-  
-      });
+              } , email: email
+            }).toArray(function(errSearch, resultSearch) {
+              if (errSearch) {
+                console.log(errSearch);
+                res.status(500).json(errSearch);
+              }else{
+                if(resultSearch.length<=0){
+                  db.close();
+                  res.status(400).json({errors:[{code:"err004",message: "You are not authorized or not in the quarantined location."}]});
+                }else{
+                  dbo.collection("SupportRequests").insertOne(supportRequest, function(err, result) {
+                    if (err) {
+                      console.log(err);
+                      res.status(500).json(err);
+                    }else{
+                      console.log("Inserted Reqeust for : " + requesttype+ ", from : "+email);
+                      db.close();
+                
+                      res.status(200).json(
+                        {
+                          success:'OK'
+                        });
+                
+                
+                    }
+                  });
         
+                }
+              
+              }
+      
+          });
+            
+        }
+
        
     
         });
