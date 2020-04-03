@@ -48,24 +48,6 @@ app.get('/', (req, res) => {
 app.post('/scanareaforinfection',ctrlLocation.scanAreaForInfection);
 
 
-app.get('/getlocation', (req, res) => {
-   // Run the query
-   
-
-var url = "mongodb+srv://mitesh:miteshpatel@cluster0-eqn0k.mongodb.net/test?retryWrites=true&w=majority";
-
-MongoClient.connect(url, function(err, db) {
-  if (err) throw err;
-  var dbo = db.db("LocationHistory");
-  dbo.collection("Locations").find({}).toArray( function(err, result) {
-    if (err) throw err;
-    console.log(result);
-    db.close();
-    res.send(result);
-  });
-});
-});
-
 
 app.use(async function(req, res, next) {
   console.log('private api authentication');
@@ -105,9 +87,13 @@ app.use(async function(req, res, next) {
 
 app.post('/privateapi/getAllSupportRequests',ctrlLogistics.getAllSupportRequests);
 
+app.post('/privateapi/getalllocations', ctrlLocation.getalllocations );
+
 app.post('/privateapi/addInfectedLocation',ctrlLocation.addInfectedLocation);
 
 app.post('/privateapi/addSupportRequest',ctrlLogistics.addSupportRequest);
+
+app.post('/privateapi/markAsResolved',ctrlLogistics.updateSupportRequestStatus);
 
 app.post('/privateapi/addInfectedLocation',ctrlLocation.addInfectedLocation);
 

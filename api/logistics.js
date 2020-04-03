@@ -1,4 +1,5 @@
 var MongoClient = require('mongodb').MongoClient;
+var ObjectID = require('mongodb').ObjectID; 
 var conf = require("./conf");
 
 
@@ -38,11 +39,58 @@ console.log("Retriving all support request for "+req.decoded.email);
   };
   
 
+/// search course by courseconfig id ///
+module.exports.updateSupportRequestStatus =  async function(req, res) {
+  console.log("Retriving all support request for "+req.decoded.email);
+  
+  var email = req.decoded.email;
+  var id = req.body._id;
+  if(!req.body._id)
+  {
+    res.status(400).json({errors:[{code:"err003",message: "Invalid Parameters"}]});
+  }else{
+    var url = conf.production.database.url;
+    const options =  conf.production.database.options;
+  
+    MongoClient.connect(url,options, function(err, db) {
+      if(err){
+        res.status(500).json(err);
+      }else{
+        var dbo = db.db("LocationHistory");
+        // var neighborhood = db.Locations.findOne( { location: { $geoIntersects: { $geometry: { type: "Point", coordinates: [ 23.0169186, 72.4724358 ] } } } } )
+        var myquery = { email: email, _id: ObjectID(id) };
+        
+        var newvalues = { $set: {status: "RESOLVED" } };
+             
+        dbo.collection("SupportRequests").updateOne(myquery, newvalues, function(errUpdate, updateData) {
+          if (errUpdate) 
+          {
+            res.status(500).json(errUpdate);
+          }else{
+            console.log("Updated Support Requests ID "+ id);
+            db.close();
+            
+            res.status(200).json(
+              {
+                success:'OK'
+              });
+          }
+        
+        });
+  
+      }
+  
+      
+    });
+
+  } 
+    
+    };
+
+
 module.exports.addSupportRequest = function(req, res) {
 
-    console.log('Adding Support Request');
-    // sample lat : 23.0265853 , lon : 72.5200679
-    console.log("Lat : "+req.body.lat+", Lon : "+req.body.lon);
+    console.log("Adding Support Request for Lat : "+req.body.lat+", Lon : "+req.body.lon);
     
     let ipAddr = req.connection.remoteAddress;
   
@@ -56,7 +104,7 @@ module.exports.addSupportRequest = function(req, res) {
   
       var lat = parseFloat(req.body.lat);
       var lon = parseFloat(req.body.lon);
-      var email = req.body.email;
+      var email = req.decoded.email;
       var requesttype = req.body.requesttype;
       var msg = req.body.msg;
       var contactno = req.body.contactno;

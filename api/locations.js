@@ -1,4 +1,5 @@
 var MongoClient = require('mongodb').MongoClient;
+var conf = require("./conf");
 
 /// search course by courseconfig id ///
 module.exports.scanAreaForInfection = function(req, res) {
@@ -9,8 +10,9 @@ console.log("Lat : "+req.body.lat+", Lon : "+req.body.lon);
 
 var lat = parseFloat(req.body.lat);
 var lon = parseFloat(req.body.lon);
-var url = "mongodb+srv://mitesh:miteshpatel@cluster0-eqn0k.mongodb.net/test?retryWrites=true&w=majority";
-const options =  { useUnifiedTopology: true, keepAlive: 1, connectTimeoutMS: 30000, useNewUrlParser: true }
+
+var url = conf.production.database.url;
+const options =  conf.production.database.options;
 
 MongoClient.connect(url,options, function(err, db) {
   if (err) throw err;
@@ -41,7 +43,20 @@ MongoClient.connect(url,options, function(err, db) {
 };
 
 
-
+module.exports.getalllocations = function(req,res){
+  var url = conf.production.database.url;
+  
+  MongoClient.connect(url, function(err, db) {
+  if (err) throw err;
+  var dbo = db.db("LocationHistory");
+  dbo.collection("Locations").find({}).toArray( function(err, result) {
+    if (err) throw err;
+    console.log(result);
+    db.close();
+    res.send(result);
+  });
+  });
+}
 
 /// search course by courseconfig id ///
 module.exports.addInfectedLocation = function(req, res) {
@@ -63,14 +78,14 @@ module.exports.addInfectedLocation = function(req, res) {
     var lat = parseFloat(req.body.lat);
     var lon = parseFloat(req.body.lon);
     var name = req.body.name;
-    var email = req.body.email;
+    var email = req.decoded.email;
     var mob = req.body.mob;
     var locationtype = req.body.locationtype;
-    var taggedby = req.body.taggedby;
+    var taggedby = req.decoded.email;
   
-    var url = "mongodb+srv://mitesh:miteshpatel@cluster0-eqn0k.mongodb.net/test?retryWrites=true&w=majority";
-    const options =  { useUnifiedTopology: true, keepAlive: 1, connectTimeoutMS: 30000, useNewUrlParser: true }
-    
+    var url = conf.production.database.url;
+    const options =  conf.production.database.options;
+        
     MongoClient.connect(url,options, function(err, db) {
       if (err) throw err;
       var dbo = db.db("LocationHistory");
@@ -88,7 +103,7 @@ module.exports.addInfectedLocation = function(req, res) {
             ]
         },
         "locationtype" : locationtype,
-        "timestamp" : new Date().getTime(), 
+        "timestamp" : new Date(), 
         "taggedby" : taggedby,
         "ipaddress" : ipAddr
       };
