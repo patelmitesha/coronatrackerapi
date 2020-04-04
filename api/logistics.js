@@ -36,8 +36,80 @@ console.log("Retriving all support request for "+req.decoded.email);
     
   });
   
-  };
+};
   
+/// search support request for citizen ///
+module.exports.getMySupportRequests =  async function(req, res) {
+  console.log("Retriving support request for "+req.decoded.email);
+  
+    var url = conf.production.database.url;
+    const options =  conf.production.database.options;
+    const email = req.decoded.email;
+  
+    MongoClient.connect(url,options, function(err, db) {
+      if(err){
+        res.status(500).json(err);
+      }else{
+        var dbo = db.db("LocationHistory");
+        // var neighborhood = db.Locations.findOne( { location: { $geoIntersects: { $geometry: { type: "Point", coordinates: [ 23.0169186, 72.4724358 ] } } } } )
+        dbo.collection("SupportRequests").find( 
+        { 
+          email:email
+        }).toArray(function(errSupportReq, resultSupportReq) {
+          if (errSupportReq) 
+          {
+            res.status(500).json(errSupportReq);
+          }else{
+            console.log("Returning " + resultSupportReq.length+ " Support Requests.");
+            db.close();
+            res.send(resultSupportReq);
+          }
+        });  
+      }      
+    });
+  };
+
+  /// retrive support request registered by assistant ///
+module.exports.getSupReqByCitizensUnderAssistant =  async function(req, res) {
+  console.log("Retriving support request for "+req.decoded.email);
+  
+    var url = conf.production.database.url;
+    const options =  conf.production.database.options;
+    const email = req.decoded.email;
+  
+    MongoClient.connect(url,options, function(err, db) {
+      if(err){
+        res.status(500).json(err);
+      }else{
+        var dbo = db.db("LocationHistory");
+        // var neighborhood = db.Locations.findOne( { location: { $geoIntersects: { $geometry: { type: "Point", coordinates: [ 23.0169186, 72.4724358 ] } } } } )
+        
+        dbo.getCollection("Locations").aggregate(
+          [
+              { 
+                  "$lookup" : { 
+                      "from" : "SupportRequests", 
+                      "localField" : "email", 
+                      "foreignField" : "email", 
+                      "as" : "Requests"
+                  }
+              },
+              { "$match": { "Requests.email": email } }
+          ]
+      ).toArray(function(errSupportReq, resultSupportReq) {
+          if (errSupportReq) 
+          {
+            res.status(500).json(errSupportReq);
+          }else{
+            console.log("Returning " + resultSupportReq.length+ " Support Requests.");
+            db.close();
+            res.send(resultSupportReq);
+          }
+        });  
+      }      
+    });
+  };
+
 
 /// search course by courseconfig id ///
 module.exports.updateSupportRequestStatus =  async function(req, res) {

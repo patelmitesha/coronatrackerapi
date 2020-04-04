@@ -35,8 +35,6 @@ if(req.method === 'OPTONS'){
   next();
 });
 
-
-
 app.get('/', (req, res) => {
   res.send('Hello from App Engine!');
 });
@@ -46,8 +44,6 @@ app.get('/', (req, res) => {
 //  app.post('/readFile',ctrlMigration.readFile);
 
 app.post('/scanareaforinfection',ctrlLocation.scanAreaForInfection);
-
-
 
 app.use(async function(req, res, next) {
   console.log('private api authentication');
@@ -91,23 +87,21 @@ app.post('/privateapi/getalllocations', ctrlLocation.getalllocations );
 
 app.post('/privateapi/addInfectedLocation',ctrlLocation.addInfectedLocation);
 
+app.post('/privateapi/getMySupportRequests',ctrlLogistics.getMySupportRequests);
+
+app.post('/privateapi/addSuspectedPatient',ctrlLocation.addSuspectedPatient);
+
+app.post('/privateapi/getSupReqByCitizensUnderAssistant',ctrlLogistics.getSupReqByCitizensUnderAssistant);
+
+app.post('/privateapi/getAllSuspeciousLocations',ctrlLocation.getallsuspeciouslocations);
+
 app.post('/privateapi/addSupportRequest',ctrlLogistics.addSupportRequest);
 
 app.post('/privateapi/markAsResolved',ctrlLogistics.updateSupportRequestStatus);
 
 app.post('/privateapi/addInfectedLocation',ctrlLocation.addInfectedLocation);
 
-app.get('/private/test', (req, res) => {
-  console.log('private api');
-  res.send('private api work');
-});
 
-
-   /*
-db.collection('Locations').find({});
-console.log(locations);
-res.send('Hello from App Engine!');
-   */
 
 // Listen to the App Engine-specified port, or 8080 otherwise
 const PORT = process.env.PORT || 8080;
